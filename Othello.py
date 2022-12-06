@@ -1,13 +1,13 @@
 # A clone of https://github.com/IcePear-Jzx/Othello-AI
 import pygame
-
+from settings import *
 
 class Chessboard:
 
     def __init__(self):
-        self.width = 60
+        self.width = TILE_WIDTH
         self.row = self.col = 8
-        self.margin = 100
+        self.margin = TILE_MARGIN
         self.chesses = [[0 for _ in range(self.col)] for _ in range(self.row)]
         # init stable chesses
         self.stable = [[0 for _ in range(self.col)] for _ in range(self.row)]
@@ -283,10 +283,4 @@ def draw(screen, images, chessboard):
     textSurfaceObj = fontObj.render(str(chessboard.count_white), True, (0, 0, 0))
     textRectObj = textSurfaceObj.get_rect()
     textRectObj.center = (pos + images.width * 2, pos // 2 + images.width)
-    screen.blit(textSurfaceObj, textRectObj)
-
-    # draw text
-    textSurfaceObj = fontObj.render("Press 'b' to undo", True, (0, 0, 0))
-    textRectObj = textSurfaceObj.get_rect()
-    textRectObj.center = (pos + 100, pos - 150)
     screen.blit(textSurfaceObj, textRectObj)
