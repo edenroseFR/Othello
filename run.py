@@ -12,7 +12,6 @@ def main():
     # set parameters
     SCREEN_WIDTH = WIDTH
     SCREEN_HEIGHT = HEIGHT
-    BLACK = PLAYER_TWO
 
     # init
     pygame.init()

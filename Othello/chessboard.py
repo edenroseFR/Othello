@@ -10,14 +10,9 @@ class Chessboard:
         self.stable_chesses = self.generate_board()
         # black on the offensive
         self.offense = 2
-        # init white chesses
-        self.chesses[self.row // 2 - 1][self.col // 2 - 1] = 1
-        self.chesses[self.row // 2][self.col // 2] = 1
-        # init black chesses
-        self.chesses[self.row // 2][self.col // 2 - 1] = 2
-        self.chesses[self.row // 2 - 1][self.col // 2] = 2
         # init count
-        self.count_black = self.count_white = 2
+        self.count_black = 2
+        self.count_white = 2
         self.count_available = 4
         self.count_stable_black = 0
         self.count_stable_white = 0
@@ -25,6 +20,7 @@ class Chessboard:
         self.count_total_stable_direct_white = 0
         # init available pos
         self.available = []
+        self.set_initial_position()
         self.updateAvailable()
 
     def generate_board(self):
@@ -43,10 +39,35 @@ class Chessboard:
         '''
         return [[0 for _ in range(self.col)] for _ in range(self.row)]
 
+    def set_initial_position(self):
+        '''
+        Modifies the board so that the initial state becomes
+
+        [
+            [0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, w, b, 0, 0, 0],
+            [0, 0, 0, b, w, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0]
+        ]
+        '''
+        # init white chesses
+        self.chesses[self.row // 2 - 1][self.col // 2 - 1] = 1
+        self.chesses[self.row // 2][self.col // 2] = 1
+        # init black chesses
+        self.chesses[self.row // 2][self.col // 2 - 1] = 2
+        self.chesses[self.row // 2 - 1][self.col // 2] = 2
 
     def updateAvailable(self):
-        directions = [(0, 1), (0, -1), (1, 0), (-1, 0),
-                      (1, 1), (-1, -1), (1, -1), (-1, 1)]
+        # TODO: Understand the tuples
+        directions = [
+            (0, 1), (0, -1), (1, 0), (-1, 0),
+            (1, 1), (-1, -1), (1, -1), (-1, 1)
+        ]
+
         color = self.offense
         color_reverse = 3 - color
         # clear available pos
@@ -55,7 +76,7 @@ class Chessboard:
             for j in range(self.col):
                 if self.chesses[i][j] == -1:
                     self.chesses[i][j] = 0
-        # find available pos
+        # find available pos that the offensive can move to
         for i in range(self.row):
             for j in range(self.col):
                 if self.chesses[i][j] == self.offense:
@@ -77,11 +98,13 @@ class Chessboard:
                             else:
                                 break
 
-
     # reverse chesses
     def reverse(self, set_i, set_j):
-        directions = [(0, 1), (0, -1), (1, 0), (-1, 0),
-                      (1, 1), (-1, -1), (1, -1), (-1, 1)]
+        directions = [
+            (0, 1), (0, -1), (1, 0), (-1, 0),
+            (1, 1), (-1, -1), (1, -1), (-1, 1)
+        ]
+
         color_reverse = self.offense
         color = 3 - color_reverse
         for dx, dy in directions:
@@ -102,7 +125,6 @@ class Chessboard:
                     break
                 else:
                     break
-
 
     def updateStable(self):
         directions = [(0, 1), (1, 0), (1, 1), (1, -1)]
@@ -126,7 +148,6 @@ class Chessboard:
                                 self.count_total_stable_direct_white += count_stable_direction
                             elif self.chesses[i][j] == 2:
                                 self.count_total_stable_direct_black += count_stable_direction
-
 
     def checkDirectionStable(self, i, j, direction):
         directions = [direction, (-direction[0], -direction[1])]
@@ -166,7 +187,6 @@ class Chessboard:
         else:
             return False
 
-
     def updateCount(self):
         self.count_black = self.count_white = 0
         self.count_available = 0
@@ -185,7 +205,6 @@ class Chessboard:
                         self.count_stable_white += 1
                     elif self.chesses[i][j] == 2:
                         self.count_stable_black += 1
-
 
     def copy(self):
         chessboard_new = Chessboard()

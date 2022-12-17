@@ -1,4 +1,5 @@
 import pygame
+from config import *
 
 def draw(screen, images, chessboard):
 
@@ -11,23 +12,34 @@ def draw(screen, images, chessboard):
     col = chessboard.col
     margin = chessboard.margin
 
+    # draw header
+    screen.blit(images.header, (0,0))
+
+    # draw help button
+    screen.blit(images.help, (920, 610))
+
+    # draw undo button
+    screen.blit(images.undo, (850, 610))
+
+
     # draw chesses
     for i in range(row):
         for j in range(col):
             color = images.tile
             chess = chessboard.chesses[i][j]
-            # if white chess
-            if chess == 1:
+            if chess == WHITE:
                 color = images.white
-            # if black chess
-            elif chess == 2:
+            elif chess == BLACK:
                 color = images.black
             elif chess == -1 and chessboard.offense == 1:
                 color = images.white_available
             elif chess == -1 and chessboard.offense == 2:
                 color = images.black_available
-            screen.blit(color, (margin + j * width + width // 2 - images.width // 2,
-                                margin + 2 + i * width + width // 2 ))
+
+            x = (margin + j * width + width // 2 - images.width // 2)
+            y = (margin + i * width + width // 2 - images.width // 2)
+
+            screen.blit(color, (x,y))
 
     # draw count
     pos = margin * 2 + chessboard.width * col
