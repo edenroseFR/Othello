@@ -31,9 +31,9 @@ def draw(screen, images, chessboard):
                 color = images.white
             elif chess == BLACK:
                 color = images.black
-            elif chess == -1 and chessboard.offense == 1:
+            elif chess == -1 and chessboard.offense ==  WHITE:
                 color = images.white_available
-            elif chess == -1 and chessboard.offense == 2:
+            elif chess == -1 and chessboard.offense == BLACK:
                 color = images.black_available
 
             x = (margin + j * width + width // 2 - images.width // 2)
@@ -43,7 +43,7 @@ def draw(screen, images, chessboard):
 
     # draw count
     pos = margin * 2 + chessboard.width * col
-    if chessboard.offense == 1:
+    if chessboard.offense == WHITE:
         screen.blit(images.black_available_transparent, (pos, pos // 2 - images.width * 1.5))
         screen.blit(images.white_transparent, (pos, pos // 2 + images.width * 0.5))
     else:

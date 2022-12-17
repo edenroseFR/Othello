@@ -1,4 +1,3 @@
-# A clone of https://github.com/IcePear-Jzx/Othello-AI
 import pygame
 
 
