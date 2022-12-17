@@ -1,6 +1,4 @@
-# A clone of https://github.com/IcePear-Jzx/Othello-AI
-import pygame
-from settings import *
+from config import *
 
 class Chessboard:
 
@@ -8,9 +6,8 @@ class Chessboard:
         self.width = TILE_WIDTH
         self.row = self.col = 8
         self.margin = TILE_MARGIN
-        self.chesses = [[0 for _ in range(self.col)] for _ in range(self.row)]
-        # init stable chesses
-        self.stable = [[0 for _ in range(self.col)] for _ in range(self.row)]
+        self.chesses = self.generate_board()
+        self.stable_chesses = self.generate_board()
         # black on the offensive
         self.offense = 2
         # init white chesses
@@ -29,6 +26,22 @@ class Chessboard:
         # init available pos
         self.available = []
         self.updateAvailable()
+
+    def generate_board(self):
+        '''
+        returns an array of eight arrays
+        [
+            [0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0]
+        ]
+        '''
+        return [[0 for _ in range(self.col)] for _ in range(self.row)]
 
 
     def updateAvailable(self):
@@ -100,14 +113,14 @@ class Chessboard:
             self.count_total_stable_direct_white = 0
             for i in range(self.row):
                 for j in range(self.col):
-                    if (self.chesses[i][j] == 1 or self.chesses[i][j] == 2) and not self.stable[i][j]:
+                    if (self.chesses[i][j] == 1 or self.chesses[i][j] == 2) and not self.stable_chesses[i][j]:
                         count_stable_direction = 0
                         for direction in directions:
                             if self.checkDirectionStable(i, j, direction):
                                 count_stable_direction += 1
                         if count_stable_direction == 4:
                             find_new_stable_chess = True
-                            self.stable[i][j] = 1
+                            self.stable_chesses[i][j] = 1
                         else:
                             if self.chesses[i][j] == 1:
                                 self.count_total_stable_direct_white += count_stable_direction
@@ -132,14 +145,14 @@ class Chessboard:
                     else:
                         return True
                 if self.chesses[checking_i][checking_j] == color:
-                    if self.stable[checking_i][checking_j]:
+                    if self.stable_chesses[checking_i][checking_j]:
                         return True
                     else:
                         checking_i += dy
                         checking_j += dx
                         find_unstable_chess = True
                 elif self.chesses[checking_i][checking_j] == color_reverse:
-                    if self.stable[checking_i][checking_j]:
+                    if self.stable_chesses[checking_i][checking_j]:
                         count_tmp += 1
                         break
                     else:
@@ -167,7 +180,7 @@ class Chessboard:
                     self.count_black += 1
                 elif chess == -1:
                     self.count_available += 1
-                if self.stable[i][j] == 1:
+                if self.stable_chesses[i][j] == 1:
                     if self.chesses[i][j] == 1:
                         self.count_stable_white += 1
                     elif self.chesses[i][j] == 2:
@@ -181,7 +194,7 @@ class Chessboard:
         for i in range(self.row):
             for j in range(self.col):
                 chessboard_new.chesses[i][j] = self.chesses[i][j]
-                chessboard_new.stable[i][j] = self.stable[i][j]
+                chessboard_new.stable_chesses[i][j] = self.stable_chesses[i][j]
         chessboard_new.count_black = self.count_black
         chessboard_new.count_white = self.count_white
         chessboard_new.count_available = self.count_available
@@ -190,97 +203,3 @@ class Chessboard:
         chessboard_new.count_total_stable_direct_black = self.count_total_stable_direct_black
         chessboard_new.count_total_stable_direct_white = self.count_total_stable_direct_white
         return chessboard_new
-
-
-def setChess(chessboard, px, py):
-
-    set_i = (py - chessboard.margin) // chessboard.width
-    set_j = (px - chessboard.margin) // chessboard.width
-
-    chessboard_new = None
-
-    if 0 <= set_i < chessboard.row and 0 <= set_j < chessboard.col and \
-    chessboard.chesses[set_i][set_j] == -1:
-        # deep copy to new chessboard
-        chessboard_new = chessboard.copy()
-        # set chess
-        chessboard_new.chesses[set_i][set_j] = chessboard.offense
-        chessboard_new.offense = 3 - chessboard.offense
-        # update
-        chessboard_new.reverse(set_i, set_j)
-        chessboard_new.updateAvailable()
-        chessboard_new.updateStable()
-        chessboard_new.updateCount()
-
-        if chessboard_new.count_available == 0:
-            chessboard_new.offense = 3 - chessboard_new.offense
-            chessboard_new.updateAvailable()
-            chessboard_new.updateCount()
-
-    return chessboard_new
-
-
-class Images:
-
-    def __init__(self):
-        self.width = 50
-        self.background = pygame.image.load('images/background.png')
-        self.black = pygame.image.load('images/black.png')
-        self.white = pygame.image.load('images/white.png')
-        self.available = pygame.image.load('images/white-available.png')
-        self.white_available = pygame.image.load('images/white-available.png')
-        self.black_available = pygame.image.load('images/black-available.png')
-        self.black_transparent = pygame.image.load('images/black-transparent.png')
-        self.white_transparent = pygame.image.load('images/white-transparent.png')
-        self.available_transparent = pygame.image.load('images/white-available-transparent.png')
-        self.white_available_transparent = pygame.image.load('images/white-available-transparent.png')
-        self.black_available_transparent = pygame.image.load('images/black-available-transparent.png')
-        self.tile = pygame.image.load('images/tile.png')
-
-
-def draw(screen, images, chessboard):
-
-    # draw backgroud
-    screen.blit(images.background, (0, 0))
-
-    # draw grid
-    width = chessboard.width
-    row = chessboard.row
-    col = chessboard.col
-    margin = chessboard.margin
-
-    # draw chesses
-    for i in range(row):
-        for j in range(col):
-            color = images.tile
-            chess = chessboard.chesses[i][j]
-            # if white chess
-            if chess == 1:
-                color = images.white
-            # if black chess
-            elif chess == 2:
-                color = images.black
-            elif chess == -1 and chessboard.offense == 1:
-                color = images.white_available
-            elif chess == -1 and chessboard.offense == 2:
-                color = images.black_available
-            screen.blit(color, (margin + j * width + width // 2 - images.width // 2,
-                                margin + 2 + i * width + width // 2 ))
-
-    # draw count
-    pos = margin * 2 + chessboard.width * col
-    if chessboard.offense == 1:
-        screen.blit(images.black_available_transparent, (pos, pos // 2 - images.width * 1.5))
-        screen.blit(images.white_transparent, (pos, pos // 2 + images.width * 0.5))
-    else:
-        screen.blit(images.black_transparent, (pos, pos // 2 - images.width * 1.5))
-        screen.blit(images.white_available_transparent, (pos, pos // 2 + images.width * 0.5))
-    fontObj = pygame.font.Font(None, images.width)
-    textSurfaceObj = fontObj.render(str(chessboard.count_black), True, (0, 0, 0))
-    textRectObj = textSurfaceObj.get_rect()
-    textRectObj.center = (pos + images.width * 2, pos // 2 - images.width)
-    screen.blit(textSurfaceObj, textRectObj)
-    textSurfaceObj = fontObj.render(str(chessboard.count_white), True, (0, 0, 0))
-    textRectObj = textSurfaceObj.get_rect()
-    textRectObj.center = (pos + images.width * 2, pos // 2 + images.width)
-    screen.blit(textSurfaceObj, textRectObj)
