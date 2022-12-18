@@ -8,6 +8,7 @@ class Images:
 
         self.header = pygame.image.load('static/header.png')
         self.help = pygame.image.load('static/help-button.png')
+        self.help_info = pygame.image.load('static/help-info.png')
         self.undo = pygame.image.load('static/undo.png')
         self.background = pygame.image.load('static/background.png')
 

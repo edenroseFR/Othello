@@ -264,18 +264,23 @@ class ChessboardTree:
                 node.kids[(i, j)] = node_new
                 node_new.parent = node
 
-    def find_best_chess(self, player):
+    def find_best_pos(self, player):
+        '''
+        returns the tuple of the best position to put disc on
+        '''
         scores = {}
         alpha = -6400
         for key in self.root.kids:
-            score = self.max_min(self.root.kids[key], player,
-                                self.expandLayer - 1, alpha)
+            score = self.max_min(
+                self.root.kids[key], player,
+                self.expandLayer - 1, alpha
+            )
             scores.update({key: score})
-            if alpha < score:
-                alpha = score
+            alpha = score if alpha < score else alpha
         if not scores:
             return (-1, -1)
         max_key = max(scores, key=scores.get)
+        print('Best position found! ', max_key)
         return max_key
 
     def max_min(self, node, player, layer, pruning_flag):

@@ -1,8 +1,16 @@
 import pygame
-from Othello.chessboard import Chessboard, ChessboardTreeNode, ChessboardTree
+from Othello.chessboard import Chessboard
+from Othello.chessboard import ChessboardTreeNode
+from Othello.chessboard import ChessboardTree
 from Othello.images import Images
 from Othello.utils import draw
 from config import *
+
+
+def revert_to_prev_state(chessboardTree):
+    chessboardTree.root = chessboardTree.root.parent
+    chessboard = chessboardTree.root.chessboard
+    return chessboardTree.root, chessboard
 
 
 def main():
@@ -27,23 +35,32 @@ def main():
     chessboardTree = ChessboardTree(node)
     chessboardTree.expand_tree()
 
-    draw(screen, images, chessboard)
-    pygame.display.update()
-
 
     while True:
+        btns = draw(screen, images, chessboard)
+        pygame.display.update()
+
+        mouse_pos = pygame.mouse.get_pos()
         # catch events
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 exit()
+
             elif event.type == pygame.MOUSEBUTTONUP:
-                if chessboard.offense == player:
-                    mouse_x, mouse_y = pygame.mouse.get_pos()
+                # Check if undo button is fired up
+                if btns['undo'].click(mouse_pos) and \
+                    chessboardTree.root.parent:
+                    chessboardTree.root, chessboard = \
+                        revert_to_prev_state(chessboardTree)
+                    continue
+                elif chessboard.offense == player:
+                    mouse_x, mouse_y = mouse_pos
                     set_i = (mouse_y - chessboard.margin) // chessboard.width
                     set_j = (mouse_x - chessboard.margin) // chessboard.width
                 else:
-                    set_i, set_j = chessboardTree.find_best_chess(player)
+                    print('finding best position to put disc to...')
+                    set_i, set_j = chessboardTree.find_best_pos(player)
                 if (set_i, set_j) in chessboard.available:
                     chessboardTree.root = chessboardTree.root.kids[(
                         set_i, set_j)]
@@ -53,14 +70,10 @@ def main():
                     pygame.display.update()
                     # expand only 1 layer
                     chessboardTree.expand_tree()
-            elif event.type == pygame.KEYUP:
-                if event.key == pygame.K_b:
-                    if chessboardTree.root.parent:
-                        chessboardTree.root = chessboardTree.root.parent
-                        chessboard = chessboardTree.root.chessboard
-                        # update screen
-                        draw(screen, images, chessboard)
-                        pygame.display.update()
+
+            elif event.type == pygame.KEYUP and chessboardTree.root.parent:
+                chessboardTree.root, chessboard = \
+                    revert_to_prev_state(chessboardTree)
 
 
 if __name__ == "__main__":
