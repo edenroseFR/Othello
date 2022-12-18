@@ -4,13 +4,14 @@ class Chessboard:
 
     def __init__(self):
         self.width = TILE_WIDTH
-        self.row = self.col = 8
+        self.row = GAME_SIZE
+        self.col = GAME_SIZE
         self.margin = TILE_MARGIN
         self.chesses = self.generate_board()
         self.stable_chesses = self.generate_board()
-        # black on the offensive
+        # set black on the offensive
         self.offense = BLACK
-        # init count
+        # initialize counts
         self.count_black = 2
         self.count_white = 2
         self.count_available = 4
@@ -18,10 +19,10 @@ class Chessboard:
         self.count_stable_white = 0
         self.count_total_stable_direct_black = 0
         self.count_total_stable_direct_white = 0
-        # init available pos
+        # initialize available pos
         self.available = []
         self.set_initial_position()
-        self.updateAvailable()
+        self.update_available()
 
     def generate_board(self):
         '''
@@ -61,7 +62,10 @@ class Chessboard:
         self.chesses[self.row // 2][self.col // 2 - 1] = 2
         self.chesses[self.row // 2 - 1][self.col // 2] = 2
 
-    def updateAvailable(self):
+    def update_available(self):
+        '''
+        Finds all available tile to occupy
+        '''
         # TODO: Understand the tuples
         directions = [
             (0, 1), (0, -1), (1, 0), (-1, 0),
@@ -98,7 +102,6 @@ class Chessboard:
                             else:
                                 break
 
-    # reverse chesses
     def reverse(self, set_i, set_j):
         directions = [
             (0, 1), (0, -1), (1, 0), (-1, 0),
@@ -126,7 +129,10 @@ class Chessboard:
                 else:
                     break
 
-    def updateStable(self):
+    def update_stable(self):
+        '''
+        Updates the array of stable chesses
+        '''
         directions = [(0, 1), (1, 0), (1, 1), (1, -1)]
         find_new_stable_chess = True
         while find_new_stable_chess:
@@ -138,7 +144,7 @@ class Chessboard:
                     if (self.chesses[i][j] == 1 or self.chesses[i][j] == 2) and not self.stable_chesses[i][j]:
                         count_stable_direction = 0
                         for direction in directions:
-                            if self.checkDirectionStable(i, j, direction):
+                            if self.check_direction_stable(i, j, direction):
                                 count_stable_direction += 1
                         if count_stable_direction == 4:
                             find_new_stable_chess = True
@@ -149,7 +155,7 @@ class Chessboard:
                             elif self.chesses[i][j] == 2:
                                 self.count_total_stable_direct_black += count_stable_direction
 
-    def checkDirectionStable(self, i, j, direction):
+    def check_direction_stable(self, i, j, direction):
         directions = [direction, (-direction[0], -direction[1])]
         color = self.chesses[i][j]
         color_reverse = 3 - color
@@ -187,10 +193,13 @@ class Chessboard:
         else:
             return False
 
-    def updateCount(self):
-        self.count_black = self.count_white = 0
+    def update_count(self):
+        self.count_black = 0
+        self.count_white = 0
+        self.count_stable_white = 0
+        self.count_stable_black = 0
         self.count_available = 0
-        self.count_stable_white = self.count_stable_black = 0
+
         for i in range(self.row):
             for j in range(self.col):
                 chess = self.chesses[i][j]
@@ -228,11 +237,10 @@ class ChessboardTreeNode:
 
     def __init__(self, chessboard):
         self.parent = None
-        # self.kids: {(i, j): node}
         self.kids = {}
         self.chessboard = chessboard
 
-    def getScore(self):
+    def get_score(self):
         chessboard = self.chessboard
         return 100 * (chessboard.count_stable_white - chessboard.count_stable_black) \
             + (chessboard.count_total_stable_direct_white
@@ -246,21 +254,21 @@ class ChessboardTree:
         # self.expandLayer >= 2
         self.expandLayer = 5
 
-    def expandTree(self):
+    def expand_tree(self):
         node = self.root
         # expand the first layer
         for i, j in node.chessboard.available:
             if (i, j) not in node.kids:
-                chessboard_new = setChessAI(node.chessboard, i, j)
+                chessboard_new = set_chess_AI(node.chessboard, i, j)
                 node_new = ChessboardTreeNode(chessboard_new)
                 node.kids[(i, j)] = node_new
                 node_new.parent = node
 
-    def findBestChess(self, player):
+    def find_best_chess(self, player):
         scores = {}
         alpha = -6400
         for key in self.root.kids:
-            score = self.MaxMin(self.root.kids[key], player,
+            score = self.max_min(self.root.kids[key], player,
                                 self.expandLayer - 1, alpha)
             scores.update({key: score})
             if alpha < score:
@@ -268,25 +276,24 @@ class ChessboardTree:
         if not scores:
             return (-1, -1)
         max_key = max(scores, key=scores.get)
-        min_key = min(scores, key=scores.get)
         return max_key
 
-    def MaxMin(self, node, player, layer, pruning_flag):
+    def max_min(self, node, player, layer, pruning_flag):
         if layer and node.chessboard.available:
             # min layer
             if node.chessboard.offense == player:
                 beta = 6400
                 for i, j in node.chessboard.available:
                     if (i, j) in node.kids:
-                        score = self.MaxMin(
+                        score = self.max_min(
                             node.kids[(i, j)], player, layer - 1, beta)
                     else:
                         # count += 1
-                        chessboard_new = setChessAI(node.chessboard, i, j)
+                        chessboard_new = set_chess_AI(node.chessboard, i, j)
                         node_new = ChessboardTreeNode(chessboard_new)
                         node.kids[(i, j)] = node_new
                         node_new.parent = node
-                        score = self.MaxMin(
+                        score = self.max_min(
                             node_new, player, layer - 1, beta)
                     if score <= pruning_flag:
                         beta = score
@@ -300,32 +307,29 @@ class ChessboardTree:
                 alpha = -6400
                 for i, j in node.chessboard.available:
                     if (i, j) in node.kids:
-                        score = self.MaxMin(
+                        score = self.max_min(
                             node.kids[(i, j)], player, layer - 1, alpha)
                     else:
-                        # count += 1
-                        chessboard_new = setChessAI(node.chessboard, i, j)
+                        chessboard_new = set_chess_AI(node.chessboard, i, j)
                         node_new = ChessboardTreeNode(chessboard_new)
                         node.kids[(i, j)] = node_new
                         node_new.parent = node
-                        score = self.MaxMin(
+                        score = self.max_min(
                             node_new, player, layer - 1, alpha)
                     if score >= pruning_flag:
                         alpha = score
                         break
                     if alpha < score:
                         alpha = score
-                # print('layer:', layer, 'max:', alpha, 'pruning:', pruning_flag)
                 return alpha
         else:
-            node.chessboard.updateStable()
-            node.chessboard.updateCount()
-            score = node.getScore()
-            # print('layer:', layer, 'leaf:', node.score)
+            node.chessboard.update_stable()
+            node.chessboard.update_count()
+            score = node.get_score()
             return score
 
 
-def setChessAI(chessboard, set_i, set_j):
+def set_chess_AI(chessboard, set_i, set_j):
 
     chessboard_new = None
 
@@ -338,13 +342,11 @@ def setChessAI(chessboard, set_i, set_j):
         chessboard_new.offense = 3 - chessboard.offense
         # update
         chessboard_new.reverse(set_i, set_j)
-        chessboard_new.updateAvailable()
-        # chessboard_new.updateStable()
-        chessboard_new.updateCount()
+        chessboard_new.update_available()
+        chessboard_new.update_count()
 
         if chessboard_new.count_available == 0:
             chessboard_new.offense = 3 - chessboard_new.offense
-            chessboard_new.updateAvailable()
-            # chessboard_new.updateCount()
+            chessboard_new.update_available()
 
     return chessboard_new

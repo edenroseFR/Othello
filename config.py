@@ -1,6 +1,7 @@
 TITLE = 'Othello'
 WIDTH = 1000
 HEIGHT = 680
+GAME_SIZE = 8
 BLACK = 2
 WHITE = 1
 

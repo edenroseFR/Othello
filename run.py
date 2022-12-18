@@ -25,7 +25,7 @@ def main():
     chessboard = Chessboard()
     node = ChessboardTreeNode(chessboard)
     chessboardTree = ChessboardTree(node)
-    chessboardTree.expandTree()
+    chessboardTree.expand_tree()
 
     draw(screen, images, chessboard)
     pygame.display.update()
@@ -38,13 +38,12 @@ def main():
                 pygame.quit()
                 exit()
             elif event.type == pygame.MOUSEBUTTONUP:
-                set_i = set_j = -1
                 if chessboard.offense == player:
-                    px, py = pygame.mouse.get_pos()
-                    set_i = (py - chessboard.margin) // chessboard.width
-                    set_j = (px - chessboard.margin) // chessboard.width
+                    mouse_x, mouse_y = pygame.mouse.get_pos()
+                    set_i = (mouse_y - chessboard.margin) // chessboard.width
+                    set_j = (mouse_x - chessboard.margin) // chessboard.width
                 else:
-                    set_i, set_j = chessboardTree.findBestChess(player)
+                    set_i, set_j = chessboardTree.find_best_chess(player)
                 if (set_i, set_j) in chessboard.available:
                     chessboardTree.root = chessboardTree.root.kids[(
                         set_i, set_j)]
@@ -53,7 +52,7 @@ def main():
                     draw(screen, images, chessboard)
                     pygame.display.update()
                     # expand only 1 layer
-                    chessboardTree.expandTree()
+                    chessboardTree.expand_tree()
             elif event.type == pygame.KEYUP:
                 if event.key == pygame.K_b:
                     if chessboardTree.root.parent:
